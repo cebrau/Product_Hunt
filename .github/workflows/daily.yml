@@ -1,8 +1,9 @@
 name: Daily Product Hunt rankings
 
 on:
+  # 08:30 UTC = 16:30 Taiwan; previous PH day already closed
   schedule:
-    - cron: "30 8 * * *"   # 08:30 UTC = 台灣 16:30;PH 的「昨天」已收盤
+    - cron: "30 8 * * *"
   workflow_dispatch:
     inputs:
       date:
