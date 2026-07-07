@@ -5,10 +5,48 @@
     python fetch_ph.py --date 2026-06-01        # 抓指定日期
     python fetch_ph.py --from 2026-06-01 --to 2026-06-30   # 回補區間
 """
+import os
+import sqlite3
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 PH_TZ = ZoneInfo("America/Los_Angeles")
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS daily_rankings (
+    date           TEXT NOT NULL,
+    rank           INTEGER NOT NULL,
+    product_id     TEXT NOT NULL,
+    name           TEXT NOT NULL,
+    tagline        TEXT,
+    votes_count    INTEGER,
+    comments_count INTEGER,
+    topics         TEXT,
+    ph_url         TEXT,
+    website        TEXT,
+    fetched_at     TEXT,
+    PRIMARY KEY (date, product_id)
+)
+"""
+
+UPSERT_SQL = """
+INSERT INTO daily_rankings
+    (date, rank, product_id, name, tagline, votes_count,
+     comments_count, topics, ph_url, website, fetched_at)
+VALUES
+    (:date, :rank, :product_id, :name, :tagline, :votes_count,
+     :comments_count, :topics, :ph_url, :website, :fetched_at)
+ON CONFLICT(date, product_id) DO UPDATE SET
+    rank = excluded.rank,
+    name = excluded.name,
+    tagline = excluded.tagline,
+    votes_count = excluded.votes_count,
+    comments_count = excluded.comments_count,
+    topics = excluded.topics,
+    ph_url = excluded.ph_url,
+    website = excluded.website,
+    fetched_at = excluded.fetched_at
+"""
 
 
 def _utc_iso(dt):
@@ -43,3 +81,16 @@ def rows_from_posts(day_iso, posts, fetched_at):
             "fetched_at": fetched_at,
         })
     return rows
+
+
+def open_db(path):
+    """開啟(必要時建立)資料庫並確保 schema 存在。"""
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    conn = sqlite3.connect(path)
+    conn.execute(SCHEMA)
+    return conn
+
+
+def upsert_rows(conn, rows):
+    conn.executemany(UPSERT_SQL, rows)
+    conn.commit()

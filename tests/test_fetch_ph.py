@@ -65,3 +65,27 @@ def test_rows_from_posts_ranks_and_flattens():
     assert second["rank"] == 2
     assert second["topics"] == ""
     assert second["tagline"] is None
+
+
+from fetch_ph import open_db, upsert_rows
+
+
+def _sample_rows(votes=512):
+    return rows_from_posts("2026-07-06", [
+        {**SAMPLE_POSTS[0], "votesCount": votes},
+        SAMPLE_POSTS[1],
+    ], "2026-07-07T08:30:00Z")
+
+
+def test_upsert_is_idempotent(tmp_path):
+    db = str(tmp_path / "test.db")
+    conn = open_db(db)
+    upsert_rows(conn, _sample_rows(votes=512))
+    upsert_rows(conn, _sample_rows(votes=600))
+    count, = conn.execute("SELECT COUNT(*) FROM daily_rankings").fetchone()
+    assert count == 2
+    votes, = conn.execute(
+        "SELECT votes_count FROM daily_rankings WHERE product_id='post-1'"
+    ).fetchone()
+    assert votes == 600
+    conn.close()
