@@ -92,6 +92,11 @@ def ph_day_bounds(day):
     return _utc_iso(start), _utc_iso(end)
 
 
+def _clean_url(url):
+    """去除 API 附加的 utm 追蹤參數。"""
+    return url.split("?")[0] if url else url
+
+
 def rows_from_posts(day_iso, posts, fetched_at):
     """API post node 列表 → 資料列 dict 列表;rank 依輸入順序 1 起算。"""
     rows = []
@@ -107,7 +112,7 @@ def rows_from_posts(day_iso, posts, fetched_at):
             "votes_count": post.get("votesCount"),
             "comments_count": post.get("commentsCount"),
             "topics": ",".join(topic_names),
-            "ph_url": post.get("url"),
+            "ph_url": _clean_url(post.get("url")),
             "website": post.get("website"),
             "fetched_at": fetched_at,
         })

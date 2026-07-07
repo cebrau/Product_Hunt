@@ -7,7 +7,7 @@ SAMPLE_POSTS = [
         "id": "post-1",
         "name": "SuperApp",
         "tagline": "The best app",
-        "url": "https://www.producthunt.com/posts/superapp",
+        "url": "https://www.producthunt.com/posts/superapp?utm_campaign=producthunt-api&utm_medium=api-v2",
         "website": "https://superapp.com",
         "votesCount": 512,
         "commentsCount": 44,
