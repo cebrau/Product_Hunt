@@ -1,0 +1,55 @@
+name: Daily Product Hunt rankings
+
+on:
+  schedule:
+    - cron: "30 8 * * *"   # 08:30 UTC = 台灣 16:30;PH 的「昨天」已收盤
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "抓指定日期 YYYY-MM-DD(留空 = 昨天)"
+        required: false
+      from:
+        description: "回補起日 YYYY-MM-DD(需搭配 to)"
+        required: false
+      to:
+        description: "回補迄日 YYYY-MM-DD(需搭配 from)"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Fetch rankings
+        env:
+          PH_API_TOKEN: ${{ secrets.PH_API_TOKEN }}
+          INPUT_DATE: ${{ inputs.date }}
+          INPUT_FROM: ${{ inputs.from }}
+          INPUT_TO: ${{ inputs.to }}
+        run: |
+          ARGS=""
+          if [ -n "$INPUT_DATE" ]; then ARGS="--date $INPUT_DATE"; fi
+          if [ -n "$INPUT_FROM" ]; then ARGS="--from $INPUT_FROM --to $INPUT_TO"; fi
+          python fetch_ph.py $ARGS
+
+      - name: Commit database
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/producthunt.db
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "data: update rankings ($(date -u +%F))"
+            git push
+          fi
