@@ -21,3 +21,25 @@ def ph_day_bounds(day):
     nxt = day + timedelta(days=1)
     end = datetime(nxt.year, nxt.month, nxt.day, tzinfo=PH_TZ)
     return _utc_iso(start), _utc_iso(end)
+
+
+def rows_from_posts(day_iso, posts, fetched_at):
+    """API post node 列表 → 資料列 dict 列表;rank 依輸入順序 1 起算。"""
+    rows = []
+    for rank, post in enumerate(posts, start=1):
+        topic_names = [e["node"]["name"]
+                       for e in post.get("topics", {}).get("edges", [])]
+        rows.append({
+            "date": day_iso,
+            "rank": rank,
+            "product_id": post["id"],
+            "name": post["name"],
+            "tagline": post.get("tagline"),
+            "votes_count": post.get("votesCount"),
+            "comments_count": post.get("commentsCount"),
+            "topics": ",".join(topic_names),
+            "ph_url": post.get("url"),
+            "website": post.get("website"),
+            "fetched_at": fetched_at,
+        })
+    return rows
