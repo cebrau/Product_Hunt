@@ -5,12 +5,43 @@
     python fetch_ph.py --date 2026-06-01        # 抓指定日期
     python fetch_ph.py --from 2026-06-01 --to 2026-06-30   # 回補區間
 """
+import argparse
 import os
 import sqlite3
+import time
 from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+import requests
+
 PH_TZ = ZoneInfo("America/Los_Angeles")
+
+API_URL = "https://api.producthunt.com/v2/api/graphql"
+DEFAULT_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          "data", "producthunt.db")
+RETRY_DELAYS = [15, 60, 180]   # 429/5xx 重試前等待秒數
+BACKFILL_PAUSE = 5             # 回補多天時每天間隔秒數
+
+QUERY = """
+query DailyPosts($postedAfter: DateTime!, $postedBefore: DateTime!, $after: String) {
+  posts(postedAfter: $postedAfter, postedBefore: $postedBefore,
+        featured: true, order: RANKING, first: 20, after: $after) {
+    pageInfo { hasNextPage endCursor }
+    edges {
+      node {
+        id
+        name
+        tagline
+        url
+        website
+        votesCount
+        commentsCount
+        topics(first: 10) { edges { node { name } } }
+      }
+    }
+  }
+}
+"""
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS daily_rankings (
@@ -111,3 +142,76 @@ def resolve_target_dates(args, today=None):
     if today is None:
         today = datetime.now(PH_TZ).date()
     return [today - timedelta(days=1)]
+
+
+def graphql_request(token, variables):
+    """單次 GraphQL 呼叫;429/5xx 依 RETRY_DELAYS 重試。"""
+    for delay in [0] + RETRY_DELAYS:
+        if delay:
+            print(f"  等待 {delay}s 後重試...", flush=True)
+            time.sleep(delay)
+        resp = requests.post(
+            API_URL,
+            json={"query": QUERY, "variables": variables},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=30,
+        )
+        if resp.status_code == 429 or resp.status_code >= 500:
+            print(f"  API 回應 {resp.status_code}", flush=True)
+            continue
+        resp.raise_for_status()
+        payload = resp.json()
+        if payload.get("errors"):
+            raise SystemExit(f"GraphQL 錯誤: {payload['errors']}")
+        return payload["data"]
+    raise SystemExit("重試多次仍失敗(rate limit 或伺服器錯誤)")
+
+
+def fetch_day_posts(token, day):
+    """抓取單一 PH 日的全部 featured posts(自動翻頁)。"""
+    posted_after, posted_before = ph_day_bounds(day)
+    posts, cursor = [], None
+    while True:
+        data = graphql_request(token, {
+            "postedAfter": posted_after,
+            "postedBefore": posted_before,
+            "after": cursor,
+        })
+        page = data["posts"]
+        posts.extend(edge["node"] for edge in page["edges"])
+        if not page["pageInfo"]["hasNextPage"]:
+            return posts
+        cursor = page["pageInfo"]["endCursor"]
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="抓取 Product Hunt 每日排行")
+    parser.add_argument("--date", help="抓指定日期 YYYY-MM-DD")
+    parser.add_argument("--from", dest="from_date", help="回補起日 YYYY-MM-DD")
+    parser.add_argument("--to", dest="to_date", help="回補迄日 YYYY-MM-DD")
+    parser.add_argument("--db", default=DEFAULT_DB, help="SQLite 檔案路徑")
+    args = parser.parse_args(argv)
+
+    token = os.environ.get("PH_API_TOKEN")
+    if not token:
+        raise SystemExit("缺少環境變數 PH_API_TOKEN(Product Hunt Developer Token)")
+
+    days = resolve_target_dates(args)
+    conn = open_db(args.db)
+    try:
+        for i, day in enumerate(days):
+            if i:
+                time.sleep(BACKFILL_PAUSE)
+            print(f"抓取 {day} ...", flush=True)
+            posts = fetch_day_posts(token, day)
+            if not posts:
+                raise SystemExit(f"{day} 抓到 0 筆,異常中止(featured 榜不應為空)")
+            fetched_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            upsert_rows(conn, rows_from_posts(day.isoformat(), posts, fetched_at))
+            print(f"  已寫入 {len(posts)} 筆")
+    finally:
+        conn.close()
+
+
+if __name__ == "__main__":
+    main()
