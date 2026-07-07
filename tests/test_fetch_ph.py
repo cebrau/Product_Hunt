@@ -89,3 +89,41 @@ def test_upsert_is_idempotent(tmp_path):
     ).fetchone()
     assert votes == 600
     conn.close()
+
+
+import argparse
+
+import pytest
+
+from fetch_ph import resolve_target_dates
+
+
+def _args(**kw):
+    base = {"date": None, "from_date": None, "to_date": None}
+    base.update(kw)
+    return argparse.Namespace(**base)
+
+
+def test_default_is_yesterday_ph_time():
+    days = resolve_target_dates(_args(), today=date(2026, 7, 7))
+    assert days == [date(2026, 7, 6)]
+
+
+def test_single_date():
+    days = resolve_target_dates(_args(date="2026-06-01"))
+    assert days == [date(2026, 6, 1)]
+
+
+def test_range():
+    days = resolve_target_dates(_args(from_date="2026-06-01", to_date="2026-06-03"))
+    assert days == [date(2026, 6, 1), date(2026, 6, 2), date(2026, 6, 3)]
+
+
+def test_range_requires_both_ends():
+    with pytest.raises(SystemExit):
+        resolve_target_dates(_args(from_date="2026-06-01"))
+
+
+def test_range_order_validated():
+    with pytest.raises(SystemExit):
+        resolve_target_dates(_args(from_date="2026-06-03", to_date="2026-06-01"))

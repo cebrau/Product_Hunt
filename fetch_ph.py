@@ -94,3 +94,20 @@ def open_db(path):
 def upsert_rows(conn, rows):
     conn.executemany(UPSERT_SQL, rows)
     conn.commit()
+
+
+def resolve_target_dates(args, today=None):
+    """由 CLI 參數決定要抓的日期列表;預設抓 PH 時區的「昨天」。"""
+    if args.date:
+        return [date.fromisoformat(args.date)]
+    if args.from_date or args.to_date:
+        if not (args.from_date and args.to_date):
+            raise SystemExit("--from 與 --to 必須同時提供")
+        start = date.fromisoformat(args.from_date)
+        end = date.fromisoformat(args.to_date)
+        if start > end:
+            raise SystemExit("--from 不可晚於 --to")
+        return [start + timedelta(days=i) for i in range((end - start).days + 1)]
+    if today is None:
+        today = datetime.now(PH_TZ).date()
+    return [today - timedelta(days=1)]
