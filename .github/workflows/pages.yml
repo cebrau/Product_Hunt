@@ -1,0 +1,42 @@
+name: Deploy game to Pages
+
+# 只把 games/yakyuken/ 發佈到 GitHub Pages,站台根目錄就是遊戲本身。
+# 資料庫與抓取腳本不會被上傳。
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "games/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # enablement: true 會在第一次執行時自動啟用 Pages,不必手動去 Settings 開
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: games/yakyuken
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
