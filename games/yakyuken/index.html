@@ -16,9 +16,9 @@
     --chalk: #D2D9D1;
     --shadow: rgba(23, 33, 28, .14);
 
-    --display: "Hiragino Mincho ProN", "Yu Mincho", "Songti TC", "Noto Serif TC",
-               "Source Han Serif TC", MingLiU, Georgia, serif;
-    --body: "Hiragino Sans", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei",
+    --display: "Songti TC", "Noto Serif TC", "Source Han Serif TC", "Source Han Serif TW",
+               PMingLiU, MingLiU, "Hiragino Mincho ProN", Georgia, serif;
+    --body: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Hiragino Sans",
             system-ui, sans-serif;
     --data: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   }
@@ -102,9 +102,8 @@
 
   .board-sub {
     font-family: var(--data);
-    font-size: 10px;
-    letter-spacing: .3em;
-    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .18em;
     color: var(--ochre);
     margin: 8px 0 0;
   }
@@ -119,10 +118,9 @@
 
   .bulb-label {
     font-family: var(--data);
-    font-size: 9px;
-    letter-spacing: .22em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--panel-ink) 55%, transparent);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: color-mix(in srgb, var(--panel-ink) 60%, transparent);
   }
 
   .bulb-value {
@@ -134,7 +132,7 @@
     color: var(--ochre);
   }
 
-  /* ── 装備 ─────────────────────────────── */
+  /* ── 裝備 ─────────────────────────────── */
   .gear-row {
     display: flex;
     flex-wrap: wrap;
@@ -155,9 +153,8 @@
 
   .gear-who {
     font-family: var(--data);
-    font-size: 10px;
-    letter-spacing: .22em;
-    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .14em;
     color: var(--ink-soft);
     min-width: 62px;
   }
@@ -186,7 +183,7 @@
     transform: translateY(3px) rotate(-6deg);
   }
 
-  /* ── 打席 ─────────────────────────────── */
+  /* ── 打擊區 ─────────────────────────────── */
   .field {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -206,7 +203,7 @@
     overflow: hidden;
   }
 
-  /* 打席の円 —— 土に引いたチョークの輪 */
+  /* 打擊區 —— 場上用白線畫出來的圈 */
   .box::before {
     content: "";
     position: absolute;
@@ -265,9 +262,8 @@
 
   .hand-who {
     font-family: var(--data);
-    font-size: 10px;
-    letter-spacing: .22em;
-    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .14em;
     color: var(--ink-soft);
     margin-bottom: 10px;
   }
@@ -297,9 +293,8 @@
 
   .hand-name {
     font-family: var(--data);
-    font-size: 10px;
-    letter-spacing: .2em;
-    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .14em;
     color: var(--ink-soft);
     margin-top: 10px;
     min-height: 1.2em;
@@ -335,7 +330,7 @@
     z-index: 1;
   }
 
-  /* ── 掛け声ボタン ─────────────────────── */
+  /* ── 喊拳按鈕 ─────────────────────── */
   .calls {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -364,9 +359,8 @@
 
   .call small {
     font-family: var(--data);
-    font-size: 9px;
-    letter-spacing: .2em;
-    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: .12em;
     color: var(--ink-soft);
   }
 
@@ -418,9 +412,8 @@
 
   th {
     text-align: left;
-    font-size: 9px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: .1em;
     color: var(--ink-soft);
     font-weight: 400;
     padding: 0 0 6px;
@@ -457,9 +450,8 @@
 
   .settings label {
     font-family: var(--data);
-    font-size: 9px;
-    letter-spacing: .18em;
-    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: .1em;
     color: var(--ink-soft);
     width: 100%;
   }
@@ -486,7 +478,7 @@
   .rules p { margin: 0 0 6px; }
   .rules b { color: var(--ink); font-weight: 600; }
 
-  /* ── 幕 ───────────────────────────────── */
+  /* ── 結束畫面 ───────────────────────────────── */
   .curtain {
     position: fixed;
     inset: 0;
@@ -537,7 +529,7 @@
   <header class="board">
     <div>
       <h1 class="board-title">野球拳</h1>
-      <p class="board-sub">Matsuyama Rules · Five Gear Match</p>
+      <p class="board-sub">松山規則 · 五件裝備制</p>
     </div>
     <div class="board-meta">
       <div class="bulb">
@@ -561,22 +553,22 @@
 
   <div class="gear-row">
     <div class="gear">
-      <div class="gear-who">你的装備</div>
+      <div class="gear-who">你的裝備</div>
       <div class="chips" id="chips-you"></div>
     </div>
     <div class="gear">
-      <div class="gear-who">對手装備</div>
+      <div class="gear-who">對手裝備</div>
       <div class="chips" id="chips-cpu"></div>
     </div>
   </div>
 
   <div class="field">
     <section class="box">
-      <p class="chant">野球するなら こういう具合に しやしゃんせ</p>
+      <p class="chant">要打棒球嘛 就得像這樣 來上一場</p>
       <div class="beats" id="beats">
-        <span class="beat">アウト！</span>
-        <span class="beat">セーフ！</span>
-        <span class="beat">よよいのよい！</span>
+        <span class="beat">出局！</span>
+        <span class="beat">安全！</span>
+        <span class="beat">喲咿呀咿喲！</span>
       </div>
 
       <div class="hands">
@@ -593,19 +585,19 @@
         </div>
       </div>
 
-      <p class="verdict" id="verdict">出拳吧 —— 輸的一方押上一件装備。</p>
+      <p class="verdict" id="verdict">出拳吧 —— 輸的一方押上一件裝備。</p>
 
       <div class="calls" id="calls">
-        <button class="call" data-move="rock" type="button">石<small>Guu · 1</small></button>
-        <button class="call" data-move="scissors" type="button">鋏<small>Choki · 2</small></button>
-        <button class="call" data-move="paper" type="button">布<small>Paa · 3</small></button>
+        <button class="call" data-move="rock" type="button">石<small>石頭 · 1</small></button>
+        <button class="call" data-move="scissors" type="button">剪<small>剪刀 · 2</small></button>
+        <button class="call" data-move="paper" type="button">布<small>布 · 3</small></button>
       </div>
     </section>
 
     <aside class="scorebook">
-      <h2>記録</h2>
+      <h2>記錄</h2>
       <div class="log-wrap">
-        <p class="empty" id="log-empty">尚無記録。</p>
+        <p class="empty" id="log-empty">尚無記錄。</p>
         <table id="log-table" hidden>
           <thead>
             <tr><th>局</th><th>你</th><th>對手</th><th>結果</th></tr>
@@ -617,18 +609,18 @@
       <div class="settings">
         <label for="level">對手實力</label>
         <select id="level">
-          <option value="rookie">素人 · 純亂數</option>
-          <option value="regular" selected>中堅 · 讀出手習慣</option>
-          <option value="ace">エース · 讀連續手法</option>
+          <option value="rookie">新手 · 純亂數</option>
+          <option value="regular" selected>老手 · 讀出手習慣</option>
+          <option value="ace">王牌 · 讀連續手法</option>
         </select>
         <button class="ctrl" id="btn-sound" type="button" aria-pressed="false">音 · 關</button>
         <button class="ctrl" id="btn-reset" type="button">再戰</button>
       </div>
 
       <div class="rules">
-        <p><b>石</b> 勝 <b>鋏</b>、<b>鋏</b> 勝 <b>布</b>、<b>布</b> 勝 <b>石</b>。</p>
-        <p>平手不押装備，重新喊拳。</p>
-        <p>先失去五件装備者，敗。</p>
+        <p><b>石</b> 勝 <b>剪</b>、<b>剪</b> 勝 <b>布</b>、<b>布</b> 勝 <b>石</b>。</p>
+        <p>平手不押裝備，重新喊拳。</p>
+        <p>先失去五件裝備者，敗。</p>
       </div>
     </aside>
   </div>
@@ -636,7 +628,7 @@
 
 <div class="curtain" id="curtain" role="dialog" aria-modal="true" aria-labelledby="curtain-title">
   <div class="curtain-card">
-    <h2 id="curtain-title">勝ち抜け</h2>
+    <h2 id="curtain-title">全勝過關</h2>
     <p id="curtain-text"></p>
     <button class="ctrl" id="btn-again" type="button">再戰</button>
   </div>
@@ -644,9 +636,9 @@
 
 <script>
   const MOVES = {
-    rock:     { kanji: "石", kana: "グー",   beats: "scissors" },
-    scissors: { kanji: "鋏", kana: "チョキ", beats: "paper" },
-    paper:    { kanji: "布", kana: "パー",   beats: "rock" }
+    rock:     { kanji: "石", name: "石頭", beats: "scissors" },
+    scissors: { kanji: "剪", name: "剪刀", beats: "paper" },
+    paper:    { kanji: "布", name: "布",   beats: "rock" }
   };
   const KEYS = Object.keys(MOVES);
   const GEAR = ["帽", "套", "棒", "球", "靴"];
@@ -677,7 +669,7 @@
     ui.nameYou.textContent = ui.nameCpu.textContent = "";
     ui.stamp.className = "stamp";
     ui.stamp.textContent = "";
-    ui.verdict.textContent = "出拳吧 —— 輸的一方押上一件装備。";
+    ui.verdict.textContent = "出拳吧 —— 輸的一方押上一件裝備。";
     ui.curtain.classList.remove("show");
     setCalls(true);
     render();
@@ -706,7 +698,7 @@
     ui.calls.querySelectorAll("button").forEach(b => { b.disabled = !on; });
   }
 
-  /* 對手出拳：素人純亂數；中堅讀近八手的出手頻率；エース讀「上一手→下一手」的轉移習慣 */
+  /* 對手出拳：新手純亂數；老手讀近八手的出手頻率；王牌讀「上一手→下一手」的轉移習慣 */
   function cpuMove() {
     const level = ui.level.value, h = state.history;
     const pick = () => KEYS[Math.floor(Math.random() * 3)];
@@ -755,7 +747,7 @@
     ui.fistYou.className = ui.fistCpu.className = "fist";
     ui.nameYou.textContent = ui.nameCpu.textContent = "";
     ui.fistYou.textContent = ui.fistCpu.textContent = "？";
-    ui.verdict.textContent = "アウト！ セーフ！ よよいのよい！";
+    ui.verdict.textContent = "出局！ 安全！ 喲咿呀咿喲！";
 
     const theirs = cpuMove();
 
@@ -773,8 +765,8 @@
 
     ui.fistYou.textContent = MOVES[mine].kanji;
     ui.fistCpu.textContent = MOVES[theirs].kanji;
-    ui.nameYou.textContent = MOVES[mine].kana;
-    ui.nameCpu.textContent = MOVES[theirs].kana;
+    ui.nameYou.textContent = MOVES[mine].name;
+    ui.nameCpu.textContent = MOVES[theirs].name;
     state.history.push(mine);
 
     let result;
@@ -789,7 +781,7 @@
       ui.fistYou.classList.add("win");
       ui.fistCpu.classList.add("lose");
       ui.stamp.textContent = "勝";
-      ui.verdict.textContent = `${MOVES[mine].kanji} 勝 ${MOVES[theirs].kanji} —— 對手押上一件装備。`;
+      ui.verdict.textContent = `${MOVES[mine].kanji} 勝 ${MOVES[theirs].kanji} —— 對手押上一件裝備。`;
       beep(880, 0.16, "triangle", 0.06);
     } else if (result === "lose") {
       state.loss++;
@@ -798,12 +790,12 @@
       ui.fistCpu.classList.add("win");
       ui.fistYou.classList.add("lose");
       ui.stamp.textContent = "負";
-      ui.verdict.textContent = `${MOVES[theirs].kanji} 勝 ${MOVES[mine].kanji} —— 你押上一件装備。`;
+      ui.verdict.textContent = `${MOVES[theirs].kanji} 勝 ${MOVES[mine].kanji} —— 你押上一件裝備。`;
       beep(196, 0.24, "sawtooth", 0.05);
     } else {
       ui.stamp.textContent = "分";
       ui.stamp.classList.add("draw");
-      ui.verdict.textContent = "平手，装備不動 —— 再喊一次。";
+      ui.verdict.textContent = "平手，裝備不動 —— 再喊一次。";
       beep(330, 0.12, "sine", 0.04);
     }
     ui.stamp.classList.add("show");
@@ -837,11 +829,11 @@
   }
 
   function finish(youWon) {
-    ui.curtainTitle.textContent = youWon ? "勝ち抜け" : "アウト";
+    ui.curtainTitle.textContent = youWon ? "全勝過關" : "出局";
     ui.curtainTitle.style.color = youWon ? "var(--red)" : "var(--ink-soft)";
     ui.curtainText.textContent = youWon
-      ? `${state.round - 1} 局內贏光對手的五件装備 —— ${state.win} 勝 ${state.loss} 負。`
-      : `五件装備全部押完 —— ${state.win} 勝 ${state.loss} 負。`;
+      ? `${state.round - 1} 局內贏光對手的五件裝備 —— ${state.win} 勝 ${state.loss} 負。`
+      : `五件裝備全部押完 —— ${state.win} 勝 ${state.loss} 負。`;
     ui.curtain.classList.add("show");
     el("btn-again").focus();
   }
