@@ -1,0 +1,871 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>野球拳道場</title>
+<style>
+  :root {
+    --ground: #E3E7E0;
+    --paper: #F3F5F0;
+    --panel: #182A3E;
+    --panel-line: #2E4560;
+    --panel-ink: #F0E9D6;
+    --ink: #17211C;
+    --ink-soft: #5A6660;
+    --line: #C3CBC1;
+    --red: #C43C24;
+    --ochre: #B98416;
+    --chalk: #D2D9D1;
+    --shadow: rgba(23, 33, 28, .14);
+
+    --display: "Hiragino Mincho ProN", "Yu Mincho", "Songti TC", "Noto Serif TC",
+               "Source Han Serif TC", MingLiU, Georgia, serif;
+    --body: "Hiragino Sans", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei",
+            system-ui, sans-serif;
+    --data: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0E141A;
+      --paper: #161F27;
+      --panel: #09111A;
+      --panel-line: #223444;
+      --panel-ink: #EFE6D2;
+      --ink: #E7E3D6;
+      --ink-soft: #94A19B;
+      --line: #2A363F;
+      --red: #E4593D;
+      --ochre: #DFAD48;
+      --chalk: #2C3A44;
+      --shadow: rgba(0, 0, 0, .5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0E141A;
+    --paper: #161F27;
+    --panel: #09111A;
+    --panel-line: #223444;
+    --panel-ink: #EFE6D2;
+    --ink: #E7E3D6;
+    --ink-soft: #94A19B;
+    --line: #2A363F;
+    --red: #E4593D;
+    --ochre: #DFAD48;
+    --chalk: #2C3A44;
+    --shadow: rgba(0, 0, 0, .5);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: clamp(16px, 4vw, 40px) clamp(12px, 4vw, 28px) 56px;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    max-width: 940px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 2.4vw, 24px);
+  }
+
+  /* ── 看板 ─────────────────────────────── */
+  .board {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 3px;
+    box-shadow: 0 2px 0 var(--panel-line), 0 12px 28px -18px var(--shadow);
+    color: var(--panel-ink);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px 20px;
+    padding: 14px clamp(14px, 3vw, 22px);
+  }
+
+  .board-title {
+    font-family: var(--display);
+    font-size: clamp(30px, 6.4vw, 44px);
+    font-weight: 700;
+    letter-spacing: .22em;
+    line-height: 1;
+    margin: 0;
+    text-indent: .22em;
+  }
+
+  .board-sub {
+    font-family: var(--data);
+    font-size: 10px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin: 8px 0 0;
+  }
+
+  .board-meta {
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(14px, 3vw, 26px);
+  }
+
+  .bulb { text-align: center; }
+
+  .bulb-label {
+    font-family: var(--data);
+    font-size: 9px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--panel-ink) 55%, transparent);
+  }
+
+  .bulb-value {
+    font-family: var(--data);
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(26px, 5vw, 34px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ochre);
+  }
+
+  /* ── 装備 ─────────────────────────────── */
+  .gear-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 18px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 12px 16px;
+  }
+
+  .gear {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .gear-who {
+    font-family: var(--data);
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    min-width: 62px;
+  }
+
+  .chips { display: flex; gap: 6px; }
+
+  .chip {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    font-family: var(--display);
+    font-size: 17px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    color: var(--ink);
+    background: transparent;
+    transition: color .35s, border-color .35s, opacity .35s, transform .35s;
+  }
+
+  .chip.lost {
+    color: var(--ink-soft);
+    border-color: var(--line);
+    border-style: dashed;
+    opacity: .4;
+    transform: translateY(3px) rotate(-6deg);
+  }
+
+  /* ── 打席 ─────────────────────────────── */
+  .field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(16px, 2.4vw, 24px);
+  }
+
+  @media (min-width: 880px) {
+    .field { grid-template-columns: minmax(0, 1fr) 264px; align-items: start; }
+  }
+
+  .box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: clamp(18px, 3.4vw, 28px) clamp(14px, 3vw, 24px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 打席の円 —— 土に引いたチョークの輪 */
+  .box::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 52%;
+    width: min(600px, 94%);
+    aspect-ratio: 2.5 / 1;
+    transform: translate(-50%, -50%);
+    border: 2px solid var(--chalk);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .chant {
+    font-family: var(--display);
+    text-align: center;
+    font-size: clamp(14px, 2.6vw, 17px);
+    letter-spacing: .16em;
+    color: var(--ink-soft);
+    margin: 0 0 4px;
+  }
+
+  .beats {
+    display: flex;
+    justify-content: center;
+    gap: clamp(10px, 2.4vw, 18px);
+    margin: 14px 0 4px;
+    font-family: var(--display);
+    font-size: clamp(15px, 3vw, 19px);
+    letter-spacing: .1em;
+  }
+
+  .beat {
+    color: var(--ink-soft);
+    opacity: .32;
+    transition: opacity .12s, color .12s, transform .12s;
+  }
+
+  .beat.on {
+    opacity: 1;
+    color: var(--red);
+    transform: translateY(-3px);
+  }
+
+  .hands {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: clamp(8px, 2vw, 20px);
+    margin: clamp(14px, 3vw, 22px) 0 clamp(10px, 2vw, 16px);
+    position: relative;
+    z-index: 1;
+  }
+
+  .hand { text-align: center; }
+
+  .hand-who {
+    font-family: var(--data);
+    font-size: 10px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+
+  .fist {
+    width: clamp(84px, 20vw, 118px);
+    height: clamp(84px, 20vw, 118px);
+    margin: 0 auto;
+    display: grid;
+    place-items: center;
+    border: 2.5px solid var(--ink);
+    border-radius: 48% 52% 51% 49% / 49% 48% 52% 51%;
+    font-family: var(--display);
+    font-size: clamp(38px, 9vw, 54px);
+    line-height: 1;
+    background: color-mix(in srgb, var(--ground) 40%, transparent);
+  }
+
+  .fist.shake { animation: bob .34s ease-in-out; }
+  .fist.win { border-color: var(--red); color: var(--red); }
+  .fist.lose { border-color: var(--line); color: var(--ink-soft); }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(0); }
+    45% { transform: translateY(-14px) rotate(-5deg); }
+  }
+
+  .hand-name {
+    font-family: var(--data);
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    min-height: 1.2em;
+  }
+
+  .stamp {
+    font-family: var(--display);
+    font-size: clamp(26px, 6vw, 38px);
+    font-weight: 700;
+    width: clamp(52px, 12vw, 74px);
+    height: clamp(52px, 12vw, 74px);
+    display: grid;
+    place-items: center;
+    border: 3px double var(--red);
+    border-radius: 3px;
+    color: var(--red);
+    opacity: 0;
+    transform: rotate(-14deg) scale(1.5);
+    transition: opacity .18s, transform .18s;
+  }
+
+  .stamp.show { opacity: 1; transform: rotate(-9deg) scale(1); }
+  .stamp.draw { border-color: var(--ochre); color: var(--ochre); }
+
+  .verdict {
+    font-family: var(--display);
+    text-align: center;
+    font-size: clamp(16px, 3vw, 20px);
+    letter-spacing: .1em;
+    min-height: 1.6em;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── 掛け声ボタン ─────────────────────── */
+  .calls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(8px, 2vw, 14px);
+    margin-top: clamp(14px, 3vw, 20px);
+    position: relative;
+    z-index: 1;
+  }
+
+  .call {
+    font-family: var(--display);
+    font-size: clamp(15px, 3.2vw, 19px);
+    letter-spacing: .12em;
+    color: var(--ink);
+    background: var(--ground);
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    padding: 14px 6px 11px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    transition: transform .12s, background .18s, box-shadow .18s;
+  }
+
+  .call small {
+    font-family: var(--data);
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .call:hover:not(:disabled) {
+    background: var(--paper);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 -3px var(--ink);
+  }
+
+  .call:active:not(:disabled) { transform: translateY(0); }
+  .call:disabled { opacity: .42; cursor: not-allowed; }
+
+  .call:focus-visible,
+  .ctrl:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--ochre);
+    outline-offset: 2px;
+  }
+
+  /* ── 記録 ─────────────────────────────── */
+  .scorebook {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .scorebook h2 {
+    font-family: var(--display);
+    font-size: 15px;
+    letter-spacing: .24em;
+    margin: 0;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+
+  .log-wrap { max-height: 262px; overflow-y: auto; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--data);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th {
+    text-align: left;
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 400;
+    padding: 0 0 6px;
+  }
+
+  td {
+    padding: 6px 0;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+  }
+
+  td:last-child, th:last-child { text-align: right; }
+
+  .mark { font-family: var(--display); font-size: 14px; }
+  .mark.w { color: var(--red); }
+  .mark.l { color: var(--ink-soft); }
+  .mark.d { color: var(--ochre); }
+
+  .empty {
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  .settings label {
+    font-family: var(--data);
+    font-size: 9px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    width: 100%;
+  }
+
+  select, .ctrl {
+    font-family: var(--body);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--ground);
+    border: 1px solid var(--ink);
+    border-radius: 2px;
+    padding: 6px 9px;
+    cursor: pointer;
+  }
+
+  .ctrl:hover { background: var(--paper); }
+
+  .rules {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.75;
+  }
+
+  .rules p { margin: 0 0 6px; }
+  .rules b { color: var(--ink); font-weight: 600; }
+
+  /* ── 幕 ───────────────────────────────── */
+  .curtain {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--panel) 88%, transparent);
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+  }
+
+  .curtain.show { opacity: 1; pointer-events: auto; }
+
+  .curtain-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: clamp(26px, 5vw, 40px);
+    text-align: center;
+    max-width: 380px;
+  }
+
+  .curtain-card h2 {
+    font-family: var(--display);
+    font-size: clamp(34px, 8vw, 48px);
+    letter-spacing: .18em;
+    margin: 0 0 10px;
+    text-indent: .18em;
+    color: var(--red);
+  }
+
+  .curtain-card p {
+    margin: 0 0 20px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fist.shake { animation: none; }
+    .stamp, .chip, .call, .curtain { transition: none; }
+    .stamp.show { transform: rotate(-9deg); }
+  }
+</style>
+
+<div class="stage">
+  <header class="board">
+    <div>
+      <h1 class="board-title">野球拳</h1>
+      <p class="board-sub">Matsuyama Rules · Five Gear Match</p>
+    </div>
+    <div class="board-meta">
+      <div class="bulb">
+        <div class="bulb-label">局</div>
+        <div class="bulb-value" id="v-round">1</div>
+      </div>
+      <div class="bulb">
+        <div class="bulb-label">勝</div>
+        <div class="bulb-value" id="v-win">0</div>
+      </div>
+      <div class="bulb">
+        <div class="bulb-label">負</div>
+        <div class="bulb-value" id="v-loss">0</div>
+      </div>
+      <div class="bulb">
+        <div class="bulb-label">連勝</div>
+        <div class="bulb-value" id="v-streak">0</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="gear-row">
+    <div class="gear">
+      <div class="gear-who">你的装備</div>
+      <div class="chips" id="chips-you"></div>
+    </div>
+    <div class="gear">
+      <div class="gear-who">對手装備</div>
+      <div class="chips" id="chips-cpu"></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <section class="box">
+      <p class="chant">野球するなら こういう具合に しやしゃんせ</p>
+      <div class="beats" id="beats">
+        <span class="beat">アウト！</span>
+        <span class="beat">セーフ！</span>
+        <span class="beat">よよいのよい！</span>
+      </div>
+
+      <div class="hands">
+        <div class="hand">
+          <div class="hand-who">你</div>
+          <div class="fist" id="fist-you">？</div>
+          <div class="hand-name" id="name-you"></div>
+        </div>
+        <div class="stamp" id="stamp"></div>
+        <div class="hand">
+          <div class="hand-who">對手</div>
+          <div class="fist" id="fist-cpu">？</div>
+          <div class="hand-name" id="name-cpu"></div>
+        </div>
+      </div>
+
+      <p class="verdict" id="verdict">出拳吧 —— 輸的一方押上一件装備。</p>
+
+      <div class="calls" id="calls">
+        <button class="call" data-move="rock" type="button">石<small>Guu · 1</small></button>
+        <button class="call" data-move="scissors" type="button">鋏<small>Choki · 2</small></button>
+        <button class="call" data-move="paper" type="button">布<small>Paa · 3</small></button>
+      </div>
+    </section>
+
+    <aside class="scorebook">
+      <h2>記録</h2>
+      <div class="log-wrap">
+        <p class="empty" id="log-empty">尚無記録。</p>
+        <table id="log-table" hidden>
+          <thead>
+            <tr><th>局</th><th>你</th><th>對手</th><th>結果</th></tr>
+          </thead>
+          <tbody id="log-body"></tbody>
+        </table>
+      </div>
+
+      <div class="settings">
+        <label for="level">對手實力</label>
+        <select id="level">
+          <option value="rookie">素人 · 純亂數</option>
+          <option value="regular" selected>中堅 · 讀出手習慣</option>
+          <option value="ace">エース · 讀連續手法</option>
+        </select>
+        <button class="ctrl" id="btn-sound" type="button" aria-pressed="false">音 · 關</button>
+        <button class="ctrl" id="btn-reset" type="button">再戰</button>
+      </div>
+
+      <div class="rules">
+        <p><b>石</b> 勝 <b>鋏</b>、<b>鋏</b> 勝 <b>布</b>、<b>布</b> 勝 <b>石</b>。</p>
+        <p>平手不押装備，重新喊拳。</p>
+        <p>先失去五件装備者，敗。</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="curtain" id="curtain" role="dialog" aria-modal="true" aria-labelledby="curtain-title">
+  <div class="curtain-card">
+    <h2 id="curtain-title">勝ち抜け</h2>
+    <p id="curtain-text"></p>
+    <button class="ctrl" id="btn-again" type="button">再戰</button>
+  </div>
+</div>
+
+<script>
+  const MOVES = {
+    rock:     { kanji: "石", kana: "グー",   beats: "scissors" },
+    scissors: { kanji: "鋏", kana: "チョキ", beats: "paper" },
+    paper:    { kanji: "布", kana: "パー",   beats: "rock" }
+  };
+  const KEYS = Object.keys(MOVES);
+  const GEAR = ["帽", "套", "棒", "球", "靴"];
+  const counterTo = m => KEYS.find(k => MOVES[k].beats === m);
+
+  const el = id => document.getElementById(id);
+  const ui = {
+    round: el("v-round"), win: el("v-win"), loss: el("v-loss"), streak: el("v-streak"),
+    chipsYou: el("chips-you"), chipsCpu: el("chips-cpu"),
+    fistYou: el("fist-you"), fistCpu: el("fist-cpu"),
+    nameYou: el("name-you"), nameCpu: el("name-cpu"),
+    stamp: el("stamp"), verdict: el("verdict"), beats: el("beats").children,
+    calls: el("calls"), level: el("level"),
+    logTable: el("log-table"), logBody: el("log-body"), logEmpty: el("log-empty"),
+    curtain: el("curtain"), curtainTitle: el("curtain-title"), curtainText: el("curtain-text")
+  };
+
+  let state, throwing = false, soundOn = false, audio = null;
+
+  function reset() {
+    state = { round: 1, win: 0, loss: 0, streak: 0, gearYou: 5, gearCpu: 5, history: [], over: false };
+    throwing = false;
+    ui.logBody.innerHTML = "";
+    ui.logTable.hidden = true;
+    ui.logEmpty.hidden = false;
+    ui.fistYou.textContent = ui.fistCpu.textContent = "？";
+    ui.fistYou.className = ui.fistCpu.className = "fist";
+    ui.nameYou.textContent = ui.nameCpu.textContent = "";
+    ui.stamp.className = "stamp";
+    ui.stamp.textContent = "";
+    ui.verdict.textContent = "出拳吧 —— 輸的一方押上一件装備。";
+    ui.curtain.classList.remove("show");
+    setCalls(true);
+    render();
+  }
+
+  function render() {
+    ui.round.textContent = state.round;
+    ui.win.textContent = state.win;
+    ui.loss.textContent = state.loss;
+    ui.streak.textContent = state.streak;
+    drawChips(ui.chipsYou, state.gearYou);
+    drawChips(ui.chipsCpu, state.gearCpu);
+  }
+
+  function drawChips(box, left) {
+    box.innerHTML = "";
+    GEAR.forEach((kanji, i) => {
+      const chip = document.createElement("div");
+      chip.className = "chip" + (i < GEAR.length - left ? " lost" : "");
+      chip.textContent = kanji;
+      box.append(chip);
+    });
+  }
+
+  function setCalls(on) {
+    ui.calls.querySelectorAll("button").forEach(b => { b.disabled = !on; });
+  }
+
+  /* 對手出拳：素人純亂數；中堅讀近八手的出手頻率；エース讀「上一手→下一手」的轉移習慣 */
+  function cpuMove() {
+    const level = ui.level.value, h = state.history;
+    const pick = () => KEYS[Math.floor(Math.random() * 3)];
+    if (level === "rookie" || h.length < 3) return pick();
+
+    if (level === "ace" && h.length >= 4 && Math.random() > 0.2) {
+      const last = h[h.length - 1], next = {};
+      for (let i = 0; i < h.length - 1; i++) {
+        if (h[i] === last) next[h[i + 1]] = (next[h[i + 1]] || 0) + 1;
+      }
+      const guess = Object.keys(next).sort((a, b) => next[b] - next[a])[0];
+      return counterTo(guess || last);
+    }
+
+    if (Math.random() > 0.4) {
+      const tally = {};
+      h.slice(-8).forEach(m => { tally[m] = (tally[m] || 0) + 1; });
+      const fav = Object.keys(tally).sort((a, b) => tally[b] - tally[a])[0];
+      return counterTo(fav);
+    }
+    return pick();
+  }
+
+  function beep(freq, dur, type = "triangle", gain = 0.05) {
+    if (!soundOn) return;
+    audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audio.createOscillator(), amp = audio.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    amp.gain.setValueAtTime(gain, audio.currentTime);
+    amp.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + dur);
+    osc.connect(amp).connect(audio.destination);
+    osc.start();
+    osc.stop(audio.currentTime + dur);
+  }
+
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  async function play(mine) {
+    if (throwing || !state || state.over) return;
+    throwing = true;
+    setCalls(false);
+
+    ui.stamp.className = "stamp";
+    ui.stamp.textContent = "";
+    ui.fistYou.className = ui.fistCpu.className = "fist";
+    ui.nameYou.textContent = ui.nameCpu.textContent = "";
+    ui.fistYou.textContent = ui.fistCpu.textContent = "？";
+    ui.verdict.textContent = "アウト！ セーフ！ よよいのよい！";
+
+    const theirs = cpuMove();
+
+    for (let i = 0; i < 3; i++) {
+      [...ui.beats].forEach((b, j) => b.classList.toggle("on", i === j));
+      ui.fistYou.classList.remove("shake");
+      ui.fistCpu.classList.remove("shake");
+      void ui.fistYou.offsetWidth;
+      ui.fistYou.classList.add("shake");
+      ui.fistCpu.classList.add("shake");
+      beep(i === 2 ? 660 : 440, 0.09, "square", 0.04);
+      await wait(340);
+    }
+    [...ui.beats].forEach(b => b.classList.remove("on"));
+
+    ui.fistYou.textContent = MOVES[mine].kanji;
+    ui.fistCpu.textContent = MOVES[theirs].kanji;
+    ui.nameYou.textContent = MOVES[mine].kana;
+    ui.nameCpu.textContent = MOVES[theirs].kana;
+    state.history.push(mine);
+
+    let result;
+    if (mine === theirs) result = "draw";
+    else if (MOVES[mine].beats === theirs) result = "win";
+    else result = "lose";
+
+    if (result === "win") {
+      state.win++;
+      state.streak++;
+      state.gearCpu--;
+      ui.fistYou.classList.add("win");
+      ui.fistCpu.classList.add("lose");
+      ui.stamp.textContent = "勝";
+      ui.verdict.textContent = `${MOVES[mine].kanji} 勝 ${MOVES[theirs].kanji} —— 對手押上一件装備。`;
+      beep(880, 0.16, "triangle", 0.06);
+    } else if (result === "lose") {
+      state.loss++;
+      state.streak = 0;
+      state.gearYou--;
+      ui.fistCpu.classList.add("win");
+      ui.fistYou.classList.add("lose");
+      ui.stamp.textContent = "負";
+      ui.verdict.textContent = `${MOVES[theirs].kanji} 勝 ${MOVES[mine].kanji} —— 你押上一件装備。`;
+      beep(196, 0.24, "sawtooth", 0.05);
+    } else {
+      ui.stamp.textContent = "分";
+      ui.stamp.classList.add("draw");
+      ui.verdict.textContent = "平手，装備不動 —— 再喊一次。";
+      beep(330, 0.12, "sine", 0.04);
+    }
+    ui.stamp.classList.add("show");
+
+    logRound(state.round, mine, theirs, result);
+    if (result !== "draw") state.round++;
+    render();
+
+    if (state.gearYou === 0 || state.gearCpu === 0) {
+      state.over = true;
+      await wait(700);
+      finish(state.gearCpu === 0);
+      return;
+    }
+
+    throwing = false;
+    setCalls(true);
+  }
+
+  function logRound(round, mine, theirs, result) {
+    ui.logEmpty.hidden = true;
+    ui.logTable.hidden = false;
+    const mark = { win: ["勝", "w"], lose: ["負", "l"], draw: ["分", "d"] }[result];
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td>${String(round).padStart(2, "0")}</td>` +
+      `<td>${MOVES[mine].kanji}</td>` +
+      `<td>${MOVES[theirs].kanji}</td>` +
+      `<td><span class="mark ${mark[1]}">${mark[0]}</span></td>`;
+    ui.logBody.prepend(tr);
+  }
+
+  function finish(youWon) {
+    ui.curtainTitle.textContent = youWon ? "勝ち抜け" : "アウト";
+    ui.curtainTitle.style.color = youWon ? "var(--red)" : "var(--ink-soft)";
+    ui.curtainText.textContent = youWon
+      ? `${state.round - 1} 局內贏光對手的五件装備 —— ${state.win} 勝 ${state.loss} 負。`
+      : `五件装備全部押完 —— ${state.win} 勝 ${state.loss} 負。`;
+    ui.curtain.classList.add("show");
+    el("btn-again").focus();
+  }
+
+  ui.calls.addEventListener("click", e => {
+    const btn = e.target.closest("button[data-move]");
+    if (btn) play(btn.dataset.move);
+  });
+
+  document.addEventListener("keydown", e => {
+    const idx = ["1", "2", "3"].indexOf(e.key);
+    if (idx > -1) play(KEYS[idx]);
+    if (e.key === "Escape" && state.over) reset();
+  });
+
+  el("btn-sound").addEventListener("click", e => {
+    soundOn = !soundOn;
+    e.currentTarget.textContent = soundOn ? "音 · 開" : "音 · 關";
+    e.currentTarget.setAttribute("aria-pressed", String(soundOn));
+    if (soundOn) beep(523, 0.1);
+  });
+
+  el("btn-reset").addEventListener("click", reset);
+  el("btn-again").addEventListener("click", reset);
+  ui.level.addEventListener("change", () => { state.history = []; });
+
+  reset();
+</script>
