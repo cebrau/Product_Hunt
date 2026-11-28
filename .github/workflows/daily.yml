@@ -34,6 +34,7 @@ jobs:
       - name: Fetch rankings
         env:
           PH_API_TOKEN: ${{ secrets.PH_API_TOKEN }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           INPUT_DATE: ${{ inputs.date }}
           INPUT_FROM: ${{ inputs.from }}
           INPUT_TO: ${{ inputs.to }}

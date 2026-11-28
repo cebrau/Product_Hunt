@@ -14,6 +14,8 @@ from zoneinfo import ZoneInfo
 
 import requests
 
+from notify_discord import send_daily_top
+
 PH_TZ = ZoneInfo("America/Los_Angeles")
 
 API_URL = "https://api.producthunt.com/v2/api/graphql"
@@ -195,6 +197,8 @@ def main(argv=None):
     parser.add_argument("--from", dest="from_date", help="回補起日 YYYY-MM-DD")
     parser.add_argument("--to", dest="to_date", help="回補迄日 YYYY-MM-DD")
     parser.add_argument("--db", default=DEFAULT_DB, help="SQLite 檔案路徑")
+    parser.add_argument("--no-notify", action="store_true", help="不推播 Discord")
+    parser.add_argument("--top", type=int, default=10, help="Discord 推播前幾名(預設 10)")
     args = parser.parse_args(argv)
 
     token = os.environ.get("PH_API_TOKEN")
@@ -202,6 +206,9 @@ def main(argv=None):
         raise SystemExit("缺少環境變數 PH_API_TOKEN(Product Hunt Developer Token)")
 
     days = resolve_target_dates(args)
+    is_backfill = bool(args.from_date or args.to_date)
+    webhook_url = os.environ.get("DISCORD_WEBHOOK_URL")
+
     conn = open_db(args.db)
     try:
         for i, day in enumerate(days):
@@ -212,8 +219,20 @@ def main(argv=None):
             if not posts:
                 raise SystemExit(f"{day} 抓到 0 筆,異常中止(featured 榜不應為空)")
             fetched_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-            upsert_rows(conn, rows_from_posts(day.isoformat(), posts, fetched_at))
+            rows = rows_from_posts(day.isoformat(), posts, fetched_at)
+            upsert_rows(conn, rows)
             print(f"  已寫入 {len(posts)} 筆")
+
+            if not args.no_notify:
+                if is_backfill:
+                    if i == 0 and webhook_url:
+                        print("  回補多日模式，預設略過 Discord 推播")
+                else:
+                    sent = send_daily_top(
+                        webhook_url, day.isoformat(), rows, top_n=args.top
+                    )
+                    if sent:
+                        print(f"  已推播 Discord Top {sent}")
     finally:
         conn.close()
 
